@@ -1,0 +1,116 @@
+{
+  "name": "systemd-manager",
+  "author": {
+    "name": "Gerard Braad",
+    "email": "me@gbraad.nl"
+  },
+  "displayName": "Systemd Manager",
+  "description": "Manage systemd services from within VS Code",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "systemd-explorer",
+          "title": "Systemd Manager",
+          "icon": "resources/systemd-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "systemd-explorer": [
+        {
+          "id": "systemdServiceExplorer",
+          "name": "Services"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "systemd-manager.refreshServices",
+        "title": "Refresh Services",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "systemd-manager.startService",
+        "title": "Start Service",
+        "icon": "$(play)"
+      },
+      {
+        "command": "systemd-manager.stopService",
+        "title": "Stop Service",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "systemd-manager.restartService",
+        "title": "Restart Service",
+        "icon": "$(debug-restart)"
+      },
+      {
+        "command": "systemd-manager.viewServiceStatus",
+        "title": "View Status",
+        "icon": "$(info)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "systemd-manager.refreshServices",
+          "when": "view == systemdServiceExplorer",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "systemd-manager.startService",
+          "when": "view == systemdServiceExplorer && viewItem == inactiveService",
+          "group": "inline"
+        },
+        {
+          "command": "systemd-manager.stopService",
+          "when": "view == systemdServiceExplorer && viewItem == activeService",
+          "group": "inline"
+        },
+        {
+          "command": "systemd-manager.restartService",
+          "when": "view == systemdServiceExplorer && viewItem == activeService",
+          "group": "inline"
+        },
+        {
+          "command": "systemd-manager.viewServiceStatus",
+          "when": "view == systemdServiceExplorer",
+          "group": "inline"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.60.0",
+    "@types/glob": "^7.1.3",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "14.x",
+    "eslint": "^7.27.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
+    "glob": "^7.1.7",
+    "mocha": "^8.4.0",
+    "typescript": "^4.3.2",
+    "vscode-test": "^1.5.2"
+  }
+}

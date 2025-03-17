@@ -1,0 +1,16 @@
+# Ignore node_modules and build artifacts
+node_modules/
+dist/
+out/
+.vscode/
+*.log
+*.tsbuildinfo
+*.map
+*.js
+*.js.map
+*.d.ts
+*.tgz
+package-lock.json
+yarn.lock
+npm-debug.log
+yarn-error.log
