@@ -1,5 +1,5 @@
 {
-  "name": "systemd-manager",
+  "name": "systemd-universal-manager",
   "author": {
     "name": "Gerard Braad",
     "email": "me@gbraad.nl"
@@ -7,12 +7,12 @@
   "publisher": "gbraad",
   "repository": {
       "type": "git",
-      "url": "https://github.com/gbraad-vscode/vscode-systemd-manager"
+      "url": "https://github.com/gbraad-vscode/systemd-services-manager"
   },
   "license": "MIT",
-  "displayName": "Systemd Manager",
+  "displayName": "Systemd Universal Manager",
   "description": "Manage systemd services from within VS Code",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "engines": {
     "vscode": "^1.60.0"
   },
