@@ -8,6 +8,33 @@ systemd Manager is a Visual Studio Code extension designed to help users manage 
 ![screenshot](./img/screenshot.png)
 
 
+
+## Installation
+
+### VS Code
+
+On the marketplace, search for `systemd universal manager` or us the followings links:
+
+  - [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=gbraad.systemd-universal-manager)
+  - [Open VSX Registry](https://open-vsx.org/extension/gbraad/systemd-universal-manager)
+
+
+### .devcontainer
+
+To add this to a devcontainer, you add the following to the `devcontainer.json`
+
+```json
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                ...,
+                "gbraad.systemd-universal-manager"
+            ]
+        }
+    }
+```
+
+
 Authors
 -------
 
