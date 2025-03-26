@@ -1,0 +1,45 @@
+name: build process
+run-name: Build process
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+  pull_request: {}
+
+jobs:
+
+  build-extension:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    container: 
+      image: ghcr.io/gbraad-actions/fedora:stable
+      options: --privileged
+
+    steps:
+      - name: Install build dependencies
+        run: |
+          dnf install -y \
+             nodejs nodejs-npm
+          npm install -g @vscode/vsce
+
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Install project dependencies
+        run: |
+          npm install
+
+      - name: Run vsce package
+        run: |
+          vsce package
+
+      - name: Upload extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-extension
+          path: ./*.vsix
+          retention-days: 7
+
