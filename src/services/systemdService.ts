@@ -27,7 +27,7 @@ export class SystemdService {
 
     async startUnit(unitName: string): Promise<boolean> {
         try {
-            await execAsync(`systemctl start ${unitName}`);
+            await execAsync(`sudo systemctl start ${unitName}`);
             vscode.window.showInformationMessage(`Started ${unitName}`);
             return true;
         } catch (error) {
@@ -38,7 +38,7 @@ export class SystemdService {
 
     async stopUnit(unitName: string): Promise<boolean> {
         try {
-            await execAsync(`systemctl stop ${unitName}`);
+            await execAsync(`sudo systemctl stop ${unitName}`);
             vscode.window.showInformationMessage(`Stopped ${unitName}`);
             return true;
         } catch (error) {
@@ -49,7 +49,7 @@ export class SystemdService {
 
     async restartUnit(unitName: string): Promise<boolean> {
         try {
-            await execAsync(`systemctl restart ${unitName}`);
+            await execAsync(`sudo systemctl restart ${unitName}`);
             vscode.window.showInformationMessage(`Restarted ${unitName}`);
             return true;
         } catch (error) {
