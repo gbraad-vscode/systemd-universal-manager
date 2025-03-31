@@ -13,7 +13,7 @@
   "displayName": "Systemd Universal Manager",
   "description": "Manage systemd from within VS Code",
   "icon": "img/icon.png",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "engines": {
       "vscode": "^1.98.0"
   },
@@ -95,6 +95,12 @@
         "command": "systemd-manager.clearFilter",
         "title": "Clear Filter",
         "icon": "$(clear-all)",
+        "category": "Systemd"
+      },
+      {
+        "command": "systemd-manager.toggleServiceMode",
+        "title": "Toggle between System and User Services",
+        "icon": "$(sync)",
         "category": "Systemd"
       }
     ],

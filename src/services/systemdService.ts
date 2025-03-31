@@ -4,6 +4,11 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+export enum ServiceMode {
+    System = 'system',
+    User = 'user'
+}
+
 export interface SystemdUnit {
     name: string;
     description: string;
@@ -14,10 +19,23 @@ export interface SystemdUnit {
 }
 
 export class SystemdService {
+    private _currentMode: ServiceMode = ServiceMode.System;
+    
+    get currentMode(): ServiceMode {
+        return this._currentMode;
+    }
+    
+    set currentMode(mode: ServiceMode) {
+        this._currentMode = mode;
+    }
     
     async listUnits(): Promise<SystemdUnit[]> {
         try {
-            const { stdout } = await execAsync('systemctl list-units --type=service --all --output=json');
+            const command = this._currentMode === ServiceMode.System 
+                ? 'systemctl list-units --type=service --all --output=json' 
+                : 'systemctl --user list-units --type=service --all --output=json';
+                
+            const { stdout } = await execAsync(command);
             return this.parseUnits(stdout);
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to list systemd units: ${error}`);
@@ -27,7 +45,11 @@ export class SystemdService {
 
     async startUnit(unitName: string): Promise<boolean> {
         try {
-            await execAsync(`sudo systemctl start ${unitName}`);
+            const command = this._currentMode === ServiceMode.System 
+                ? `sudo systemctl start ${unitName}`
+                : `systemctl --user start ${unitName}`;
+                
+            await execAsync(command);
             vscode.window.showInformationMessage(`Started ${unitName}`);
             return true;
         } catch (error) {
@@ -38,7 +60,11 @@ export class SystemdService {
 
     async stopUnit(unitName: string): Promise<boolean> {
         try {
-            await execAsync(`sudo systemctl stop ${unitName}`);
+            const command = this._currentMode === ServiceMode.System 
+                ? `sudo systemctl stop ${unitName}`
+                : `systemctl --user stop ${unitName}`;
+                
+            await execAsync(command);
             vscode.window.showInformationMessage(`Stopped ${unitName}`);
             return true;
         } catch (error) {
@@ -49,7 +75,11 @@ export class SystemdService {
 
     async restartUnit(unitName: string): Promise<boolean> {
         try {
-            await execAsync(`sudo systemctl restart ${unitName}`);
+            const command = this._currentMode === ServiceMode.System 
+                ? `sudo systemctl restart ${unitName}`
+                : `systemctl --user restart ${unitName}`;
+                
+            await execAsync(command);
             vscode.window.showInformationMessage(`Restarted ${unitName}`);
             return true;
         } catch (error) {
@@ -60,7 +90,11 @@ export class SystemdService {
 
     async getUnitStatus(unitName: string): Promise<string> {
         try {
-            const { stdout } = await execAsync(`systemctl status ${unitName}`);
+            const command = this._currentMode === ServiceMode.System 
+                ? `systemctl status ${unitName}`
+                : `systemctl --user status ${unitName}`;
+                
+            const { stdout } = await execAsync(command);
             return stdout;
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to get status for ${unitName}: ${error}`);

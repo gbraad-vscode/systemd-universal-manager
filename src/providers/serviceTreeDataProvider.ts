@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { SystemdService, SystemdUnit } from '../services/systemdService';
+import { SystemdService, SystemdUnit, ServiceMode } from '../services/systemdService';
 
 // Define group types
 export enum ServiceGroupType {
@@ -49,8 +49,34 @@ export class ServiceTreeItem extends vscode.TreeItem {
     }
 }
 
-export class ServiceTreeDataProvider implements vscode.TreeDataProvider<ServiceTreeItem | ServiceGroupItem> {
-    private _onDidChangeTreeData = new vscode.EventEmitter<ServiceTreeItem | ServiceGroupItem | undefined | null | void>();
+// New class to represent the mode selection item at the top of the tree
+export class ServiceModeItem extends vscode.TreeItem {
+    constructor(
+        public readonly currentMode: ServiceMode
+    ) {
+        super('', vscode.TreeItemCollapsibleState.None);
+        
+        this.label = `Mode: ${currentMode === ServiceMode.System ? 'System' : 'User'}`;
+        this.contextValue = 'serviceMode';
+        this.tooltip = `Click to switch to ${currentMode === ServiceMode.System ? 'User' : 'System'} services`;
+        this.description = 'Switch to view different services';
+        
+        // Icon for the mode
+        this.iconPath = new vscode.ThemeIcon(
+            currentMode === ServiceMode.System ? 'server' : 'person'
+        );
+        
+        // Make the item look like a button
+        this.command = {
+            command: 'systemd-manager.toggleServiceMode',
+            title: 'Toggle Service Mode',
+            arguments: [this]
+        };
+    }
+}
+
+export class ServiceTreeDataProvider implements vscode.TreeDataProvider<ServiceTreeItem | ServiceGroupItem | ServiceModeItem> {
+    private _onDidChangeTreeData = new vscode.EventEmitter<ServiceTreeItem | ServiceGroupItem | ServiceModeItem | undefined | null | void>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
     
     private groupType = ServiceGroupType.All;
@@ -73,11 +99,20 @@ export class ServiceTreeDataProvider implements vscode.TreeDataProvider<ServiceT
         this.refresh();
     }
 
-    getTreeItem(element: ServiceTreeItem | ServiceGroupItem): vscode.TreeItem {
+    toggleServiceMode(): void {
+        const newMode = this.systemdService.currentMode === ServiceMode.System 
+            ? ServiceMode.User 
+            : ServiceMode.System;
+            
+        this.systemdService.currentMode = newMode;
+        this.refresh();
+    }
+
+    getTreeItem(element: ServiceTreeItem | ServiceGroupItem | ServiceModeItem): vscode.TreeItem {
         return element;
     }
 
-    async getChildren(element?: ServiceTreeItem | ServiceGroupItem): Promise<Array<ServiceTreeItem | ServiceGroupItem>> {
+    async getChildren(element?: ServiceTreeItem | ServiceGroupItem | ServiceModeItem): Promise<Array<ServiceTreeItem | ServiceGroupItem | ServiceModeItem>> {
         if (element) {
             if (element instanceof ServiceGroupItem) {
                 return element.units
@@ -87,25 +122,30 @@ export class ServiceTreeDataProvider implements vscode.TreeDataProvider<ServiceT
             return []; 
         } 
         else {
+            // Add the mode selector at the top
+            const modeSelector = new ServiceModeItem(this.systemdService.currentMode);
+            
             this.units = await this.systemdService.listUnits();
             const serviceUnits = this.units.filter(unit => unit.type === 'service');
             
             const filteredUnits = this.filterText ? 
                 serviceUnits.filter(unit => this.matchesFilter(unit)) : 
                 serviceUnits;
-
+            
             switch (this.groupType) {
                 case ServiceGroupType.ByStatus:
-                    return this.groupByStatus(filteredUnits);
+                    return [modeSelector, ...this.groupByStatus(filteredUnits)];
                     
                 case ServiceGroupType.All:
                 default:
                     if (this.filterText) {
-                        return filteredUnits.map(unit => 
-                            new ServiceTreeItem(unit, vscode.TreeItemCollapsibleState.None)
-                        );
+                        return [
+                            modeSelector,
+                            ...filteredUnits.map(unit => new ServiceTreeItem(unit, vscode.TreeItemCollapsibleState.None))
+                        ];
                     }
                     return [
+                        modeSelector,
                         new ServiceGroupItem('All Services', 'all', filteredUnits)
                     ];
             }

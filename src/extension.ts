@@ -1,10 +1,15 @@
 import * as vscode from 'vscode';
-import { SystemdService } from './services/systemdService';
+import { SystemdService, ServiceMode } from './services/systemdService';
 import { ServiceTreeDataProvider, ServiceGroupType } from './providers/serviceTreeDataProvider';
 
 export function activate(context: vscode.ExtensionContext) {
-
-    const systemdService = new SystemdService();    
+    // Get the stored mode or default to system
+    const storedMode = context.globalState.get<ServiceMode>('serviceMode') || ServiceMode.System;
+    
+    const systemdService = new SystemdService();
+    // Set the initial mode from stored settings
+    systemdService.currentMode = storedMode;
+    
     const serviceTreeDataProvider = new ServiceTreeDataProvider(systemdService);
     
     vscode.window.registerTreeDataProvider('systemdServiceExplorer', serviceTreeDataProvider);
@@ -44,6 +49,12 @@ export function activate(context: vscode.ExtensionContext) {
                 channel.appendLine(status);
                 channel.show();
             }
+        }),
+        
+        vscode.commands.registerCommand('systemd-manager.toggleServiceMode', () => {
+            serviceTreeDataProvider.toggleServiceMode();
+            
+            context.globalState.update('serviceMode', systemdService.currentMode);
         }),
         
         vscode.commands.registerCommand('systemd-manager.groupByStatus', () => {
