@@ -39,6 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (item) {
                 const status = await systemdService.getUnitStatus(item.unit.name);
                 
+                // TODO: do not open a new one
                 const channel = vscode.window.createOutputChannel(`Systemd: ${item.unit.name}`);
                 channel.appendLine(status);
                 channel.show();

@@ -13,7 +13,7 @@
   "displayName": "Systemd Universal Manager",
   "description": "Manage systemd from within VS Code",
   "icon": "img/icon.png",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "engines": {
       "vscode": "^1.98.0"
   },
@@ -30,7 +30,7 @@
         {
           "id": "systemd-explorer",
           "title": "Systemd Services",
-          "icon": "resources/systemd-icon.svg"
+          "icon": "img/icon.svg"
         }
       ]
     },
