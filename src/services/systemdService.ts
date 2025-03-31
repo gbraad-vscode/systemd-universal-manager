@@ -97,6 +97,16 @@ export class SystemdService {
             const { stdout } = await execAsync(command);
             return stdout;
         } catch (error) {
+            // For systemctl status, exit code 3 is normal for inactive services
+            // and should still return the output
+            if (error instanceof Error && 'stdout' in error) {
+                const execError = error as any;
+                if (execError.code === 3 && execError.stdout) {
+                    return execError.stdout;
+                }
+            }
+            
+            // Otherwise
             vscode.window.showErrorMessage(`Failed to get status for ${unitName}: ${error}`);
             return '';
         }
