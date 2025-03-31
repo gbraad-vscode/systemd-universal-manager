@@ -1,6 +1,30 @@
 import * as vscode from 'vscode';
 import { SystemdService, SystemdUnit } from '../services/systemdService';
 
+// Define group types
+export enum ServiceGroupType {
+    All = 'all',
+    ByStatus = 'status',
+    ByType = 'type'  // For future categorization
+}
+
+// Represent a group in the tree view
+export class ServiceGroupItem extends vscode.TreeItem {
+    constructor(
+        public readonly label: string,
+        public readonly groupId: string,
+        public readonly units: SystemdUnit[]
+    ) {
+        super(label, vscode.TreeItemCollapsibleState.Expanded);
+        this.contextValue = 'serviceGroup';
+        this.tooltip = `${units.length} services`;
+        this.description = `${units.length} services`;
+        
+        // Icon for the group
+        this.iconPath = new vscode.ThemeIcon('folder');
+    }
+}
+
 export class ServiceTreeItem extends vscode.TreeItem {
     constructor(
         public readonly unit: SystemdUnit,
@@ -25,9 +49,13 @@ export class ServiceTreeItem extends vscode.TreeItem {
     }
 }
 
-export class ServiceTreeDataProvider implements vscode.TreeDataProvider<ServiceTreeItem> {
-    private _onDidChangeTreeData: vscode.EventEmitter<ServiceTreeItem | undefined | null | void> = new vscode.EventEmitter<ServiceTreeItem | undefined | null | void>();
-    readonly onDidChangeTreeData: vscode.Event<ServiceTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
+export class ServiceTreeDataProvider implements vscode.TreeDataProvider<ServiceTreeItem | ServiceGroupItem> {
+    private _onDidChangeTreeData = new vscode.EventEmitter<ServiceTreeItem | ServiceGroupItem | undefined | null | void>();
+    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+    
+    private groupType = ServiceGroupType.All;
+    private filterText = '';
+    private units: SystemdUnit[] = [];
 
     constructor(private systemdService: SystemdService) {}
 
@@ -35,20 +63,84 @@ export class ServiceTreeDataProvider implements vscode.TreeDataProvider<ServiceT
         this._onDidChangeTreeData.fire();
     }
 
-    getTreeItem(element: ServiceTreeItem): vscode.TreeItem {
+    setGroupType(groupType: ServiceGroupType): void {
+        this.groupType = groupType;
+        this.refresh();
+    }
+
+    setFilterText(filterText: string): void {
+        this.filterText = filterText.toLowerCase();
+        this.refresh();
+    }
+
+    getTreeItem(element: ServiceTreeItem | ServiceGroupItem): vscode.TreeItem {
         return element;
     }
 
-    async getChildren(element?: ServiceTreeItem): Promise<ServiceTreeItem[]> {
+    async getChildren(element?: ServiceTreeItem | ServiceGroupItem): Promise<Array<ServiceTreeItem | ServiceGroupItem>> {
         if (element) {
-            return [];
-        } else {
-            const units = await this.systemdService.listUnits();
-            const serviceUnits = units.filter(unit => unit.type === 'service');
+            if (element instanceof ServiceGroupItem) {
+                return element.units
+                    .filter(unit => this.matchesFilter(unit))
+                    .map(unit => new ServiceTreeItem(unit, vscode.TreeItemCollapsibleState.None));
+            }
+            return []; 
+        } 
+        else {
+            this.units = await this.systemdService.listUnits();
+            const serviceUnits = this.units.filter(unit => unit.type === 'service');
             
-            return serviceUnits.map(unit => 
-                new ServiceTreeItem(unit, vscode.TreeItemCollapsibleState.None)
-            );
+            const filteredUnits = this.filterText ? 
+                serviceUnits.filter(unit => this.matchesFilter(unit)) : 
+                serviceUnits;
+
+            switch (this.groupType) {
+                case ServiceGroupType.ByStatus:
+                    return this.groupByStatus(filteredUnits);
+                    
+                case ServiceGroupType.All:
+                default:
+                    if (this.filterText) {
+                        return filteredUnits.map(unit => 
+                            new ServiceTreeItem(unit, vscode.TreeItemCollapsibleState.None)
+                        );
+                    }
+                    return [
+                        new ServiceGroupItem('All Services', 'all', filteredUnits)
+                    ];
+            }
         }
+    }
+
+    private matchesFilter(unit: SystemdUnit): boolean {
+        if (!this.filterText) {
+            return true;
+        }
+        
+        return unit.name.toLowerCase().includes(this.filterText) || 
+               unit.description.toLowerCase().includes(this.filterText);
+    }
+
+    private groupByStatus(units: SystemdUnit[]): ServiceGroupItem[] {
+        const activeUnits = units.filter(unit => unit.activeState === 'active');
+        const inactiveUnits = units.filter(unit => unit.activeState === 'inactive');
+        const otherUnits = units.filter(unit => 
+            unit.activeState !== 'active' && unit.activeState !== 'inactive');
+        
+        const groups: ServiceGroupItem[] = [];
+        
+        if (activeUnits.length > 0) {
+            groups.push(new ServiceGroupItem('Active', 'active', activeUnits));
+        }
+        
+        if (inactiveUnits.length > 0) {
+            groups.push(new ServiceGroupItem('Inactive', 'inactive', inactiveUnits));
+        }
+        
+        if (otherUnits.length > 0) {
+            groups.push(new ServiceGroupItem('Other', 'other', otherUnits));
+        }
+        
+        return groups;
     }
 }

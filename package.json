@@ -13,22 +13,24 @@
   "displayName": "Systemd Universal Manager",
   "description": "Manage systemd from within VS Code",
   "icon": "img/icon.png",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "engines": {
       "vscode": "^1.98.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onView:systemdServiceExplorer"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
           "id": "systemd-explorer",
-          "title": "Systemd Universal Manager",
-          "icon": "img/icon.svg"
+          "title": "Systemd Services",
+          "icon": "resources/systemd-icon.svg"
         }
       ]
     },
@@ -43,28 +45,57 @@
     "commands": [
       {
         "command": "systemd-manager.refreshServices",
-        "title": "Systemd: Refresh Services",
-        "icon": "$(refresh)"
+        "title": "Refresh Services",
+        "icon": "$(refresh)",
+        "category": "Systemd"
       },
       {
         "command": "systemd-manager.startService",
-        "title": "Systemd: Start Service",
-        "icon": "$(play)"
+        "title": "Start Service",
+        "icon": "$(play)",
+        "category": "Systemd"
       },
       {
         "command": "systemd-manager.stopService",
-        "title": "Systemd: Stop Service",
-        "icon": "$(debug-stop)"
+        "title": "Stop Service",
+        "icon": "$(debug-stop)",
+        "category": "Systemd"
       },
       {
         "command": "systemd-manager.restartService",
-        "title": "Systemd: Restart Service",
-        "icon": "$(debug-restart)"
+        "title": "Restart Service",
+        "icon": "$(debug-restart)",
+        "category": "Systemd"
       },
       {
         "command": "systemd-manager.viewServiceStatus",
-        "title": "Systemd: View Status",
-        "icon": "$(info)"
+        "title": "View Service Status",
+        "icon": "$(open-preview)",
+        "category": "Systemd"
+      },
+      {
+        "command": "systemd-manager.groupByStatus",
+        "title": "Group by Status",
+        "icon": "$(list-tree)",
+        "category": "Systemd"
+      },
+      {
+        "command": "systemd-manager.showAllServices",
+        "title": "Show All Services",
+        "icon": "$(list-flat)",
+        "category": "Systemd"
+      },
+      {
+        "command": "systemd-manager.filterServices",
+        "title": "Filter Services",
+        "icon": "$(filter)",
+        "category": "Systemd"
+      },
+      {
+        "command": "systemd-manager.clearFilter",
+        "title": "Clear Filter",
+        "icon": "$(clear-all)",
+        "category": "Systemd"
       }
     ],
     "menus": {
@@ -73,6 +104,26 @@
           "command": "systemd-manager.refreshServices",
           "when": "view == systemdServiceExplorer",
           "group": "navigation"
+        },
+        {
+          "command": "systemd-manager.filterServices",
+          "when": "view == systemdServiceExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "systemd-manager.clearFilter",
+          "when": "view == systemdServiceExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "systemd-manager.groupByStatus",
+          "when": "view == systemdServiceExplorer",
+          "group": "2_grouping@1"
+        },
+        {
+          "command": "systemd-manager.showAllServices",
+          "when": "view == systemdServiceExplorer",
+          "group": "2_grouping@2"
         }
       ],
       "view/item/context": [
@@ -93,7 +144,7 @@
         },
         {
           "command": "systemd-manager.viewServiceStatus",
-          "when": "view == systemdServiceExplorer",
+          "when": "view == systemdServiceExplorer && (viewItem == activeService || viewItem == inactiveService)",
           "group": "inline"
         }
       ]

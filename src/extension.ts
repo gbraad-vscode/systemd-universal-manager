@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { SystemdService } from './services/systemdService';
-import { ServiceTreeDataProvider } from './providers/serviceTreeDataProvider';
+import { ServiceTreeDataProvider, ServiceGroupType } from './providers/serviceTreeDataProvider';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -43,6 +43,29 @@ export function activate(context: vscode.ExtensionContext) {
                 channel.appendLine(status);
                 channel.show();
             }
+        }),
+        
+        vscode.commands.registerCommand('systemd-manager.groupByStatus', () => {
+            serviceTreeDataProvider.setGroupType(ServiceGroupType.ByStatus);
+        }),
+        
+        vscode.commands.registerCommand('systemd-manager.showAllServices', () => {
+            serviceTreeDataProvider.setGroupType(ServiceGroupType.All);
+        }),
+        
+        vscode.commands.registerCommand('systemd-manager.filterServices', async () => {
+            const filterText = await vscode.window.showInputBox({
+                placeHolder: 'Filter services by name or description',
+                prompt: 'Enter text to filter services'
+            });
+            
+            if (filterText !== undefined) {
+                serviceTreeDataProvider.setFilterText(filterText);
+            }
+        }),
+        
+        vscode.commands.registerCommand('systemd-manager.clearFilter', () => {
+            serviceTreeDataProvider.setFilterText('');
         })
     );
 }
