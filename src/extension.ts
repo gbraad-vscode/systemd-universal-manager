@@ -78,6 +78,40 @@ export function activate(context: vscode.ExtensionContext) {
         
         vscode.commands.registerCommand('systemd-manager.clearFilter', () => {
             serviceTreeDataProvider.setFilterText('');
+        }),
+
+        vscode.commands.registerCommand('systemd-manager.enableService', async (item) => {
+            if (item) {
+                await systemdService.enableUnit(item.unit.name);
+                serviceTreeDataProvider.refresh();
+            }
+        }),
+        
+        vscode.commands.registerCommand('systemd-manager.disableService', async (item) => {
+            if (item) {
+                await systemdService.disableUnit(item.unit.name);
+                serviceTreeDataProvider.refresh();
+            }
+        }),
+        
+        vscode.commands.registerCommand('systemd-manager.maskService', async (item) => {
+            if (item) {
+                const response = await vscode.window.showWarningMessage(
+                    `Are you sure you want to mask ${item.unit.name}? This will make it impossible to start the service until it is unmasked.`,
+                    'Yes', 'No'
+                );
+                if (response === 'Yes') {
+                    await systemdService.maskUnit(item.unit.name);
+                    serviceTreeDataProvider.refresh();
+                }
+            }
+        }),
+        
+        vscode.commands.registerCommand('systemd-manager.unmaskService', async (item) => {
+            if (item) {
+                await systemdService.unmaskUnit(item.unit.name);
+                serviceTreeDataProvider.refresh();
+            }
         })
     );
 }

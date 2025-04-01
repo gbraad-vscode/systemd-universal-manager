@@ -13,7 +13,7 @@
   "displayName": "Systemd Universal Manager",
   "description": "Manage systemd from within VS Code",
   "icon": "img/icon.png",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "engines": {
       "vscode": "^1.98.0"
   },
@@ -102,6 +102,26 @@
         "title": "Toggle between System and User Services",
         "icon": "$(sync)",
         "category": "Systemd"
+      },
+      {
+        "command": "systemd-manager.enableService",
+        "title": "Enable Service",
+        "category": "Systemd"
+      },
+      {
+          "command": "systemd-manager.disableService",
+          "title": "Disable Service",
+          "category": "Systemd"
+      },
+      {
+          "command": "systemd-manager.maskService",
+          "title": "Mask Service",
+          "category": "Systemd"
+      },
+      {
+          "command": "systemd-manager.unmaskService",
+          "title": "Unmask Service",
+          "category": "Systemd"
       }
     ],
     "menus": {
@@ -152,7 +172,27 @@
           "command": "systemd-manager.viewServiceStatus",
           "when": "view == systemdServiceExplorer && (viewItem == activeService || viewItem == inactiveService)",
           "group": "inline"
-        }
+        },
+        {
+          "command": "systemd-manager.enableService",
+          "when": "view == systemdServiceExplorer",
+          "group": "service_config@1"
+      },
+      {
+          "command": "systemd-manager.disableService",
+          "when": "view == systemdServiceExplorer",
+          "group": "service_config@2"
+      },
+      {
+          "command": "systemd-manager.maskService",
+          "when": "view == systemdServiceExplorer",
+          "group": "service_config@3"
+      },
+      {
+          "command": "systemd-manager.unmaskService",
+          "when": "view == systemdServiceExplorer",
+          "group": "service_config@4"
+      }
       ]
     }
   },

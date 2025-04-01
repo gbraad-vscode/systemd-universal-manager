@@ -112,6 +112,66 @@ export class SystemdService {
         }
     }
 
+    async enableUnit(unitName: string): Promise<boolean> {
+        try {
+            const command = this._currentMode === ServiceMode.System 
+                ? `sudo systemctl enable ${unitName}`
+                : `systemctl --user enable ${unitName}`;
+                
+            const { stdout } = await execAsync(command);
+            vscode.window.showInformationMessage(`Enabled ${unitName}`);
+            return true;
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to enable ${unitName}: ${error}`);
+            return false;
+        }
+    }
+    
+    async disableUnit(unitName: string): Promise<boolean> {
+        try {
+            const command = this._currentMode === ServiceMode.System 
+                ? `sudo systemctl disable ${unitName}`
+                : `systemctl --user disable ${unitName}`;
+                
+            const { stdout } = await execAsync(command);
+            vscode.window.showInformationMessage(`Disabled ${unitName}`);
+            return true;
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to disable ${unitName}: ${error}`);
+            return false;
+        }
+    }
+    
+    async maskUnit(unitName: string): Promise<boolean> {
+        try {
+            const command = this._currentMode === ServiceMode.System 
+                ? `sudo systemctl mask ${unitName}`
+                : `systemctl --user mask ${unitName}`;
+                
+            const { stdout } = await execAsync(command);
+            vscode.window.showInformationMessage(`Masked ${unitName}`);
+            return true;
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to mask ${unitName}: ${error}`);
+            return false;
+        }
+    }
+    
+    async unmaskUnit(unitName: string): Promise<boolean> {
+        try {
+            const command = this._currentMode === ServiceMode.System 
+                ? `sudo systemctl unmask ${unitName}`
+                : `systemctl --user unmask ${unitName}`;
+                
+            const { stdout } = await execAsync(command);
+            vscode.window.showInformationMessage(`Unmasked ${unitName}`);
+            return true;
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to unmask ${unitName}: ${error}`);
+            return false;
+        }
+    }
+
     private parseUnits(stdout: string): SystemdUnit[] {
         try {
             const units = JSON.parse(stdout);
